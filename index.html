@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>LiveKit Realtime Input</title>
+    <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.11.4/dist/livekit-client.umd.min.js"></script>
+    <style>
+      #remote-video {
+        width: 600px;
+        background: #000;
+      }
+      #shared-input {
+        margin-top: 20px;
+        width: 300px;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <video id="remote-video" autoplay playsinline muted controls></video>
+    </div>
+
+    <div>
+      <button onclick="createAndShare()">Create Share Link</button>
+      <button onclick="connectToRoom()">Join Room</button>
+    </div>
+
+    <div>
+      <input id="shared-input" type="text" placeholder="Type here (shared)" />
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
