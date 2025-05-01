@@ -5,51 +5,68 @@
     <title>LiveKit Realtime Input</title>
     <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.11.4/dist/livekit-client.umd.min.js"></script>
     <style>
-      #remote-video {
-        width: 600px;
-        background: #000;
+      body {
+        margin: 0;
+        background: linear-gradient(45deg, #5f5f5f, #333a3c, #000000);
       }
+
+      .title {
+        color: #4caf50;
+        margin: 1rem 0.5rem 0.5rem;
+        font-size: 24px;
+        font-family: monospace;
+      }
+      .type-area {
+        text-align: center;
+      }
+
+      .video-area {
+        height: 88vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #remote-video {
+        width: 65%;
+        height: auto;
+        background: #000;
+        border-radius: 0.8rem;
+        box-shadow: 0 0 18px black;
+      }
+
       #shared-input {
-        margin-top: 20px;
-        width: 300px;
+        margin-bottom: 1rem;
         font-size: 18px;
+        padding: 15px;
+        border-radius: 8px;
+        border: 3px solid #26243a;
+        width: 100%;
+        max-width: 45rem;
+        background: black;
+        color: white;
       }
     </style>
   </head>
   <body>
-    <div>
-      <video id="remote-video" autoplay playsinline muted controls></video>
+    <div class="type-area">
+      <div class="title">Input access has been granted by the user:</div>
+      <input id="shared-input" type="text" placeholder="Type here" />
+    </div>
+    <div class="video-area">
+      <video id="remote-video" autoplay playsinline muted></video>
     </div>
 
-    <div>
-      <button onclick="createAndShare()">Create Share Link</button>
-      <button onclick="connectToRoom()">Join Room</button>
-    </div>
-
-    <div>
-      <input id="shared-input" type="text" placeholder="Type here (shared)" />
-    </div>
+    <script>
+      if (new URLSearchParams(window.location.search).get("edit") !== "true") {
+        document.write("<style>.type-area{display:none;}</style>");
+      }
+    </script>
 
     <script>
       const BackendURL = "https://dev.nexthopllc.com";
       let room;
 
-      async function createAndShare() {
-        try {
-          const res = await fetch(`${BackendURL}/api/create-room`);
-          const data = await res.json();
-          const { room: roomName, token } = data;
-
-          const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomName}`;
-          alert(`Share this link:\n${shareLink}`);
-          console.log(shareLink);
-
-          await connectToLivekit(roomName, token);
-          await startScreenShare();
-        } catch (err) {
-          console.error("Error:", err);
-        }
-      }
+      connectToRoom();
 
       async function connectToRoom() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -112,9 +129,19 @@
             video: true,
           });
           const screenTrack = new window.LivekitClient.LocalVideoTrack(
-            stream.getVideoTracks()[0]
+            stream.getVideoTracks()[0],
+            {
+              name: "screen_share",
+              simulcast: false,
+              videoEncoding: {
+                maxBitrate: 2500000,
+                maxFramerate: 30,
+              },
+            }
           );
-          await room.localParticipant.publishTrack(screenTrack);
+          await room.localParticipant.publishTrack(screenTrack, {
+            simulcast: false,
+          });
           console.log("Screen sharing started");
         } catch (err) {
           console.error("Error starting screen share:", err);
@@ -136,7 +163,7 @@
 
       function updateSharedInput(text) {
         const inputField = document.getElementById("shared-input");
-        inputField.value = text; // Update the input field with the new text from the other participant
+        inputField.value = text;
       }
     </script>
   </body>
